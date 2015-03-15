@@ -7,6 +7,7 @@ import (
 )
 
 func init() {
+	// routes different just for testing
 	beego.Router("/get", &controllers.MainController{}, "get:Get")
 	beego.Router("/post", &controllers.MainController{}, "post:Post")
 }

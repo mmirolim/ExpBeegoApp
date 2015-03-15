@@ -1,6 +1,10 @@
 package controllers
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/astaxie/beego"
+)
 
 type MainController struct {
 	BaseCtrl
@@ -8,11 +12,13 @@ type MainController struct {
 
 func (c *MainController) Get() {
 	err := errors.New("internal error")
-	c.onErrReturnJson(err, internalErrorJson)
+	// return internal error in json format
+	c.onErrReturnJson(err, internalErrJson)
 }
 
 func (c *MainController) Post() {
 	err := errors.New("some error")
-	c.onErrReturnJson(err, dbErrorJson)
-	//	c.abortOnErr(err, "dbError")
+	// return db error response in json format
+	c.onErrReturnJson(err, dbErrJson)
+	beego.Error("this will not print")
 }
