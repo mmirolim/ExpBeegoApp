@@ -46,22 +46,6 @@ func (c *BaseCtrl) Prepare() {
 	c.Data["title"] = "EXP.App"
 }
 
-// always serve in json format
-// does not work for custom aborts
-func (c *BaseCtrl) Finish() {
-	c.ServeJson()
-}
-
-// this is beego feature added in 1.4.3
-// custom error handler but you can't set headers
-// (or I could not do it)
-func (c *BaseCtrl) abortOnErr(err error, errHandler string) {
-	if err != nil {
-		beego.Warn(err)
-		c.Abort(errHandler)
-	}
-}
-
 // stop execution of response if there is error
 // log it and respond with predefined message in json format
 func (c *BaseCtrl) onErrReturnJson(err error, cerr CtrlError) {
@@ -73,9 +57,24 @@ func (c *BaseCtrl) onErrReturnJson(err error, cerr CtrlError) {
 	// to get more data we can extract it from Context
 	// here we loggin errors with URL so we will know where it happened
 	beego.Error(c.Ctx.Request.URL, err)
-	w := c.Ctx.ResponseWriter
 	// set content-type to json
 	// if needed set other headers here
+	w := c.Ctx.ResponseWriter
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, string(cerr))
+	w.Header().Set("Server", "MyAPP")
+	// set proper error status
+	// and it should be set before
+	// call to ResponseWriter.Write
+	// otherwise status will be set to htt.StatusOk
+	// http://godoc.org/net/http#ResponseWriter
+	switch cerr {
+	case dbErrJson:
+		w.WriteHeader(400)
+	default:
+		w.WriteHeader(500)
+	}
+	// write response
+	w.Write([]byte(cerr))
+	// maybe not to panic to get execution time
+	c.StopRun()
 }
