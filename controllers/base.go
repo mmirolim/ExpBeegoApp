@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/astaxie/beego"
 )
@@ -78,3 +79,65 @@ func (c *BaseCtrl) onErrReturnJson(err error, cerr CtrlError) {
 	// maybe not to panic to get execution time
 	c.StopRun()
 }
+
+// create struct here just
+// to make it easier see assocsiated struct
+// Mail Notifier config
+type NotifyMailConfig struct {
+	Apikey    string        //Mandrill Api Key
+	WaitTime  time.Duration // Wait time if internet connnection epsont wait for this time
+	Timeout   time.Duration // If Mandrill Api dont responce too long close connection in this time
+	BuffLimit int           // Buffer Limit
+	Retry     int           //If error occures while sending retry it n times
+	RatePerH  int           //Mandrill Send limit per Hour
+}
+
+type ConfParam struct {
+	param  *int
+	key    string
+	errStr string
+}
+
+// init some service
+func initService() {
+	var NFS NotifyService
+	//Init Notification Service Config
+	var err error
+	var wt, tm, buffLimit, retry, hrlimit, groupId int
+
+	// conf to read
+	confParams := []ConfParam{
+		{&wt, "wait_time", "wt error"},
+		{&tm, "timeout", "timeout error"},
+		{&buffLimit, "buff_limit", "buf error"},
+		{&retry, "retry", "retry error"},
+		{&hrlimit, "hour_limit", "hl error"},
+		{&groupId, "group_id", " group id error"},
+	}
+	// iterate conf
+	// it could be further simplified
+	for _, v := range confParams {
+		*v.param, err = beego.AppConfig.Int(v.key)
+		if err != nil {
+			beego.Error(v.errStr, err)
+			// stop iterating if there is error
+			return
+		}
+	}
+
+	conf := NotifyMailConfig{
+		WaitTime:  time.Duration(wt) * time.Second,
+		Timeout:   time.Duration(tm) * time.Second,
+		BuffLimit: buffLimit,
+		Retry:     retry,
+		RatePerH:  hrlimit,
+	}
+
+	//Init Notification Service
+	NFS.Start(conf)
+
+}
+
+type NotifyService struct{}
+
+func (n *NotifyService) Start(conf NotifyMailConfig) {}
