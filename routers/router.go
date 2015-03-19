@@ -10,4 +10,5 @@ func init() {
 	// routes different just for testing
 	beego.Router("/get", &controllers.MainController{}, "get:Get")
 	beego.Router("/post", &controllers.MainController{}, "post:Post")
+	beego.Router("/logs", &controllers.Debug{}, "get:Get")
 }
