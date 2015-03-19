@@ -1,2 +1,12 @@
 expbeego
 *.*~
+#*.*
+tmp/
+*.sw*
+*.orig
+*.log
+logs/
+*.*~
+*.*#
+*.#*
+*.test
